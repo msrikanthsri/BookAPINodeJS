@@ -290,10 +290,83 @@ shapeAI.put("/publication/update/book/:isbn",(req,res)=>{
     database.books.forEach(book => {
         if(book.ISBN===req.params.isbn){
             book.publication=req.body.pubId;
-            return
+            return book.publication
         }
     });
     return res.json({publication:database.publications,Books:database.books,Message:"Successfully updated"})
 })
+
+
+
+/*
+Route : /book/delete
+Description : Delete a book
+Access : PUBLIC
+Parameters : ISBN
+Body : 
+Method : DELETE
+*/
+shapeAI.delete("/book/delete/:isbn",(req,res)=>{
+    const updatedBookDatabase = database.books.filter((book)=>req.params.isbn!==book.ISBN)
+    database.books=updatedBookDatabase
+    return res.json({Books:database.books,Message:"Book deleted successfully"})
+})
+
+/*
+Route : /book/delete/author
+Description : Delete a author from book
+Access : PUBLIC
+Parameters : ISBN,author id
+Body : 
+Method : DELETE
+*/
+shapeAI.delete("/book/delete/author/:isbn/:authorID",(req,res)=>{
+    database.books.forEach((book)=>{
+        if(req.params.isbn===book.ISBN){
+            const newAuthorList = book.authors.filter((author)=>author!== parseInt(req.params.authorID))
+            book.authors=newAuthorList
+        return
+        }
+        
+    })
+    //update the author database
+    database.authors.forEach((author)=>{
+        if(author.id===req.params.authorID){
+            const newBooksList = author.books.filter((book)=>book.ISBN !== req.params.isbn)
+            author.books=newBooksList
+            return
+        }
+    })
+    return res.json(database.books)
+} )
+
+/*
+Route : /publication/delete/book
+Description : Delete a book from publications
+Access : PUBLIC
+Parameters : ISBN,publciation id
+Body : 
+Method : DELETE
+*/
+shapeAI.delete("/publication/delete/book/:isbn/:pubId",(req,res)=>{
+    database.publications.forEach((publication)=>{
+        if(publication.id===req.params.pubId){
+            const newBooksList=publication.books.filter((book)=>book!==req.params.isbn)
+            publication.books=newBooksList
+            return
+        }
+    })
+    database.books.forEach((book)=>{
+        if(book.ISBN===req.params.isbn){
+            book.publication=0
+            return
+        }
+
+
+    })
+    return res.json({Books:database.books,publications:database.publications})
+})
+
+
 
 shapeAI.listen(3000,()=>console.log("Hey u are listening at 3000"));

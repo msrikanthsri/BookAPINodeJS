@@ -44,7 +44,7 @@ Publications
     PUT
     --------
         - Update Publication details
-        - Update / Add new book to an publication
+        - Update / Add new book to an publication --Done
     Delete
     --------
         - Delete a book from publication
