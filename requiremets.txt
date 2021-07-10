@@ -1,0 +1,68 @@
+//Requirements
+
+Books
+ISBN,Title,Author[],Language, pub date,Category
+
+Publications
+Name,Id,Books[]
+
+Author
+Name,Id,Books[]
+
+Requirements
+-------------
+Books
+----------
+    Get
+    -------
+        - To get all Books -- Done
+        - To get specific Books -- Done
+        - To get list of books based on Category -- Done
+        - To get list of books based on Author -- Done
+    POST
+    ------
+        - New Book -- Done
+    PUT
+    ------
+        - Update title details of a book --Done
+        - Update/Add new Author
+    Delete
+    ------
+        - Delete a book
+        - Delete a Author
+
+Publications
+-------------
+    Get
+    --------
+        - To get all Publications -- Done
+        - To get specific publication. -- Done
+        - To get a list of Publications based on book. -- Done
+    POST
+    --------
+        -Add new Publications -- Done
+    PUT
+    --------
+        - Update Publication details
+        - Update / Add new book to an publication
+    Delete
+    --------
+        - Delete a book from publication
+        - Delete Publication
+
+Author
+------------
+    Get
+    --------
+        - To get all authors -- Done
+        - to get specific  -- Done
+        - To get list of authors based on book -- Done
+    POST
+    --------
+        - New Author -- Done
+    PUT
+    --------
+        - Author details
+    Delete
+    --------
+        -Delete Author
