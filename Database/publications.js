@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const publicationSchema = mongoose.Schema({
-    id:number,
+    id:Number,
     name:String,
     books:[String]
 })

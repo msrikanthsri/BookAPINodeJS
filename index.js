@@ -10,9 +10,9 @@ const mongoose=require("mongoose")
 const database=require("./Database/index")
 
 //Models
-const BookModels = require("./Database/book")
-const AuthorModels = require("./Database/author")
-const PublicationModels = require("./Database/publications")
+const BookModel = require("./Database/book")
+const AuthorModel = require("./Database/author")
+const PublicationModel = require("./Database/publications")
 
 //Initializing express
 const shapeAI=express();
@@ -35,8 +35,9 @@ Parameters : None
 Method : GET
 */
 // To Get all books
-shapeAI.get("/",(req,res)=>{
-    return res.json({Books:database.books})
+shapeAI.get("/",async(req,res)=>{
+    const getAllBooks= await BookModel.find();
+    return res.json({Books:getAllBooks})
 })
 
 /*
@@ -47,9 +48,11 @@ Parameters : isbn
 Method : GET
 */
 //To Get one book based on ISBN number
-shapeAI.get("/is/:isbn",(req,res)=>{
-    const getSpecificBook=database.books.filter((book)=>book.ISBN===req.params.isbn)
-    if(getSpecificBook.length===0){
+shapeAI.get("/is/:isbn",async(req,res)=>{
+
+    const getSpecificBook = await BookModel.findOne({ISBN:req.params.isbn})
+    // const getSpecificBook=database.books.filter((book)=>book.ISBN===req.params.isbn)
+    if(!getSpecificBook){
         return res.json({"error" : `No book found for the ISBN of ${req.params.isbn}`})
     }
     return res.json(getSpecificBook)
@@ -63,11 +66,12 @@ Parameters : category
 Method : GET
 */
 //To get list of books based on Category
-shapeAI.get("/c/:category",(req,res)=>{
-    const getSpecificBooks=database.books.filter((book)=>
-    book.category.includes(req.params.category)
-    )
-    if(getSpecificBooks.length===0){
+shapeAI.get("/c/:category",async(req,res)=>{
+    const getSpecificBooks=await BookModel.findOne({category : req.params.category})
+    // const getSpecificBooks=database.books.filter((book)=>
+    // book.category.includes(req.params.category)
+    // )
+    if(!getSpecificBooks){
         return res.json({"error" : `No book found for the ISBN of ${req.params.category}`})
     }
     return res.json(getSpecificBooks)
@@ -101,8 +105,9 @@ Parameters : None
 Method : GET
 */
 // To Get all authors
-shapeAI.get("/author/authors",(req,res)=>{
-    return res.json({Books:database.authors})
+shapeAI.get("/author/authors",async (req,res)=>{
+    const getAllAuthors=await AuthorModel.find()
+    return res.json({Books:getAllAuthors})
 })
 
 /*
@@ -212,7 +217,8 @@ Method : POST
 shapeAI.post("/book/new",(req,res)=>{
     //Body
     const {newBook}=req.body
-    database.books.push(newBook)
+    const addNewBook = BookModel.create(newBook)
+    //database.books.push(newBook)
     return res.json({Books:newBook,Message:"Book Added succesfully !!!"})
 })
 
@@ -224,11 +230,12 @@ Parameters :
 Method : POST
 */
 // To Create new author
-shapeAI.post("/author/new",(req,res)=>{
+shapeAI.post("/author/new",async(req,res)=>{
     //Body
     const {newAuthor}=req.body
-    database.authors.push(newAuthor)
-    return res.json({Books:database.authors,Message:"Author Added succesfully !!!"})
+    const addNewAuthor=await AuthorModel.create(newAuthor)
+    //database.authors.push(newAuthor)
+    return res.json({Books:newAuthor,Message:"Author Added succesfully !!!"})
 })
 
 /*
@@ -253,15 +260,25 @@ Access : PUBLIC
 Parameters : isbn
 Method : PUT
 */
-shapeAI.put("/book/update/:isbn",(req,res)=>{
+shapeAI.put("/book/update/:isbn",async (req,res)=>{
+    
+    const updatedBook = await BookModel.findOneAndUpdate({
+        ISBN:req.params.isbn
+    },
+    {
+        title:req.body.bookTitle
+    },{
+        new:true
+    }
+    )
     //For each - directly modify original array
-    database.books.forEach((book)=>{
-        if(book.ISBN===req.params.isbn){
-            book.title=req.body.bookTitle
-            return
-        }
-    })
-    return res.json(database.books)
+    // database.books.forEach((book)=>{
+    //     if(book.ISBN===req.params.isbn){
+    //         book.title=req.body.bookTitle
+    //         return
+    //     }
+    // })
+    return res.json(updatedBook)
 })
 
 /*
@@ -271,20 +288,44 @@ Access : PUBLIC
 Parameters : ISBN
 Method : PUT
 */
-shapeAI.put("/book/author/update/:isbn",(req,res)=>{
+shapeAI.put("/book/author/update/:isbn",async (req,res)=>{
+    const updatedBookAuthor = await BookModel.findOneAndUpdate({
+        ISBN:req.params.isbn
+    },
+    {
+        $addToSet:{
+            authors:req.body.newAuthor
+        }
+    },
+    {
+        new:true
+    }
+    )
+    
+    const updatedNewAuthor = await AuthorModel.findOneAndUpdate({
+        id:req.params.newAuthor
+    },
+    {
+        $addToSet:{books:req.params.isbn}
+    },
+    {
+        new:true
+    }
+    )
     //update the book database
-    database.books.forEach((book)=>{
-        if(book.ISBN===req.params.isbn){
-            return book.authors.push(req.body.newAuthor)
-        }
-    })
-    //update the author database
-    database.authors.forEach((author)=>{
-        if(author.id===req.body.newAuthor){
-            return author.name.push()
-        }
-    })
 
+    // database.books.forEach((book)=>{
+    //     if(book.ISBN===req.params.isbn){
+    //         return book.authors.push(req.body.newAuthor)
+    //     }
+    // })
+    //update the author database
+    // database.authors.forEach((author)=>{
+    //     if(author.id===req.body.newAuthor){
+    //         return author.name.push()
+    //     }
+    // })
+    return res.json({Book:updatedBookAuthor,Author:updatedNewAuthor})
 })
 
 /*
@@ -323,9 +364,10 @@ Body :
 Method : DELETE
 */
 shapeAI.delete("/book/delete/:isbn",(req,res)=>{
-    const updatedBookDatabase = database.books.filter((book)=>req.params.isbn!==book.ISBN)
-    database.books=updatedBookDatabase
-    return res.json({Books:database.books,Message:"Book deleted successfully"})
+    
+    // const updatedBookDatabase = database.books.filter((book)=>req.params.isbn!==book.ISBN)
+    // database.books=updatedBookDatabase
+    // return res.json({Books:database.books,Message:"Book deleted successfully"})
 })
 
 /*
