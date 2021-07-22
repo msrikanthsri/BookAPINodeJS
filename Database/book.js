@@ -2,7 +2,12 @@ const mongoose=require("mongoose");
 
 //creating a Book schema
 const bookSchema = mongoose.Schema({
-    ISBN:String,
+    ISBN:{
+        type:String,
+        required:true,
+        minLength:8,
+        maxLength:9
+    },
     title:String,
     authors:[Number],
     language:String,

@@ -80,12 +80,16 @@ Parameters :
 Method : POST
 */
 // To Create new book
-Router.post("/new",(req,res)=>{
+Router.post("/new",async (req,res)=>{
     //Body
+    try{
     const {newBook}=req.body
-    const addNewBook = BookModel.create(newBook)
+    await BookModel.create(newBook)
     //database.books.push(newBook)
     return res.json({Books:newBook,Message:"Book Added succesfully !!!"})
+    }catch(error){
+        return res.json({error:error.message})
+    }
 })
 
 /*
